@@ -6,6 +6,9 @@ import VueSetupExtend from 'vite-plugin-vue-setup-extend'
 import { VantResolver } from '@vant/auto-import-resolver'
 import Components from 'unplugin-vue-components/vite'
 
+//设置github
+const isGitHubActions = process.env.GITHUB_ACTIONS === 'true'
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
@@ -21,5 +24,5 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
-  base: '/dragon-hill_app/',
+  base: isGitHubActions ? '/dragon-hill_app/' : '/',
 })
