@@ -6,7 +6,6 @@ import VueSetupExtend from 'vite-plugin-vue-setup-extend'
 import { VantResolver } from '@vant/auto-import-resolver'
 import Components from 'unplugin-vue-components/vite'
 
-
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
