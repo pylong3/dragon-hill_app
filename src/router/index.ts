@@ -1,7 +1,8 @@
 import { createRouter,createWebHashHistory } from "vue-router";
-import Hellow from "@/paga/Hellow.vue";
-import CloudRain from "@/paga/CloudRain.vue";
-import BilibiliHeard from "@/paga/BilibiliHeard.vue";
+import Hellow from "@/pages/Hellow.vue";
+import CloudRain from "@/pages/CloudRain.vue";
+import BilibiliHeard from "@/pages/BilibiliHeard.vue";
+import LovePig from "@/pages/LovePig.vue";
 
 // 配置路由
 const routes = [
@@ -14,9 +15,17 @@ const routes = [
     'component': Hellow
   },
   {
-    'path': '/biliHeard',
+    'path': '/biliHeader',
     'component': BilibiliHeard
-  }
+  },
+  {
+    'path': '/lovePig',
+    'component': LovePig
+  },
+  {
+    'path': '/',
+    'redirect': '/biliHeader'
+  } 
 ]
 
 export const router = createRouter({

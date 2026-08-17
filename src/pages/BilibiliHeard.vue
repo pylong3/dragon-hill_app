@@ -1,17 +1,3 @@
-<template>
-  <div class="banner" @mouseenter="enterMemory($event)" @mouseleave="leaveMemory()" @mousemove="change($event)">
-    <div class="image" v-for="(imgData, index) in imgDatas" :key="index">
-      <img
-      :class="{guodu:isGuodu}"
-        :width="imgData.width"
-        :height="imgData.height"
-        :src="imgData.src"
-        :style="{ transform: `translateX(${imgData.x}px)`, filter: `blur(${imgData.b}px)` }"
-      />
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { images } from '@/static/images/mapTable.ts'
@@ -144,9 +130,23 @@ function enterMemory(e: MouseEvent) {
   // console.log(e)
   initX.value = e.clientX
 }
+function touchStart(e: TouchEvent) {
+  const touch = e.touches[0]!
+   isGuodu.value = false
+  // console.log(e)
+  initX.value = touch.clientX
+}
 //鼠标内部移动
-function change(e:MouseEvent) {
+function change(e: MouseEvent) {
   realTimeX.value = e.clientX
+  xiugai()
+}
+function touchChange(e:TouchEvent) {
+  const touch = e.touches[0]!
+  realTimeX.value = touch.clientX
+  xiugai()
+}
+function xiugai() {
   imgDatas.value = imgDatas.value.map((value, index) => {
     //位移因数
     const factor = (6 - index)*10
@@ -157,6 +157,7 @@ function change(e:MouseEvent) {
     return newValue
   })
 }
+
 //眨眼睛
 let timeout = 0
 let blinkCount = 4
@@ -177,6 +178,29 @@ function blink() {
 blink()
 </script>
 
+
+<template>
+  <div class="banner" 
+  @mouseenter="enterMemory($event)" 
+  @mouseleave="leaveMemory()" 
+  @mousemove="change($event)"
+  @touchstart="touchStart($event)"
+  @touchend="leaveMemory()"
+  @touchmove.prevent="touchChange($event)"
+  >
+    <div class="image" v-for="(imgData, index) in imgDatas" :key="index">
+      <img
+      :class="{guodu:isGuodu}"
+        :width="imgData.width"
+        :height="imgData.height"
+        :src="imgData.src"
+        :style="{ transform: `translateX(${imgData.x}px)`, filter: `blur(${imgData.b}px)` }"
+      />
+    </div>
+  </div>
+</template>
+
+
 <style scoped>
 .banner {
   position: relative;
@@ -184,6 +208,7 @@ blink()
   height: 155px;
   overflow: hidden;
   background-color: #00b894;
+  touch-action: none;
 }
 
 .image {
@@ -196,5 +221,18 @@ blink()
 }
 .guodu{
   transition: 0.2s linear;
+}
+
+@media (max-width:576px) {
+  .banner {
+  position: relative;
+  width: 100vw;
+  height: 20vw;
+  overflow: hidden;
+  background-color: #00b894;
+  }
+  .image img{
+    scale: 0.5;
+  }
 }
 </style>

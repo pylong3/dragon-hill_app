@@ -1,28 +1,6 @@
-<template>
-  <div class="container" :style="coord">
-    <span style="color: white">雨量：</span>
-    <input
-      class="block"
-      type="range"
-      min="0"
-      max="100"
-      v-model="progress"
-      step="1"
-      @pointerup.stop
-      @pointerdown.stop
-    />
-    <div
-      class="cloud"
-      @mousedown="isDown = true"
-      @mouseup="isDown = false"
-      @mousemove="cloudMove($event)"
-    ></div>
-  </div>
-  <div class="rain" v-for="item in items" :key="item.id" :style="item.style"></div>
-</template>
-
 <script setup lang="ts">
 import { reactive, onUnmounted, type CSSProperties, watch, ref, computed } from 'vue'
+
 //定义接口
 interface message {
   id: number
@@ -30,8 +8,8 @@ interface message {
 }
 
 //移动云朵坐标
-let leftCoord = ref(100)
-let topCoord = ref(100)
+let leftCoord = ref(31)
+let topCoord = ref(77)
 let coord = computed<CSSProperties>(() => {
   return {
     left: leftCoord.value + 'px',
@@ -39,12 +17,38 @@ let coord = computed<CSSProperties>(() => {
   }
 })
 //移动云朵回调
-let isDown = ref(false)
+let isDown = ref<boolean>(false)
+let mouseX: number
+let mouseY: number
+function cloudMoveStart(e: MouseEvent) {
+  isDown.value = true
+  mouseX = e.clientX
+  mouseY = e.clientY
+}
 function cloudMove(e: MouseEvent) {
   if (isDown.value) {
-    leftCoord.value += e.movementX
-    topCoord.value += e.movementY
+    leftCoord.value += e.clientX - mouseX
+    topCoord.value += e.clientY - mouseY
+    mouseX = e.clientX
+    mouseY = e.clientY
   }
+}
+//移动端的移动云朵
+let touchX: number
+let touchY: number
+function cloudStartTouch(e: TouchEvent) {
+  const touch = e.touches[0]!
+  touchX = touch.clientX
+  touchY = touch.clientY
+}
+function cloudMoveTouch(e: TouchEvent) {
+  e.preventDefault()
+  const touch = e.touches[0]!
+  // console.log(touch)
+  leftCoord.value += touch.clientX - touchX
+  topCoord.value += touch.clientY - touchY
+  touchX = touch.clientX
+  touchY = touch.clientY
 }
 
 //雨滴数据
@@ -87,6 +91,31 @@ onUnmounted(() => {
   clearInterval(time)
 })
 </script>
+
+<template>
+  <div class="container" :style="coord">
+    <span style="color: black">雨量：</span>
+    <input
+      class="block"
+      type="range"
+      min="0"
+      max="100"
+      v-model="progress"
+      step="1"
+      @pointerup.stop
+      @pointerdown.stop
+    />
+    <div
+      class="cloud"
+      @mousedown="cloudMoveStart($event)"
+      @mouseup="isDown = false"
+      @mousemove="cloudMove($event)"
+      @touchstart="cloudStartTouch($event)"
+      @touchmove="cloudMoveTouch($event)"
+    ></div>
+  </div>
+  <div class="rain" v-for="item in items" :key="item.id" :style="item.style"></div>
+</template>
 
 <style scoped>
 .container {
