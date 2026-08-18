@@ -1,12 +1,7 @@
 {
   "files": [],
   "references": [
-    {
-      "path": "./tsconfig.node.json"
-    },
-    {
-      "path": "./tsconfig.app.json"
-    }
+    { "path": "./tsconfig.app.json" }, // 指向应用配置
+    { "path": "./tsconfig.node.json" } // 指向 Node 配置
   ],
-  "include": ["auto-imports.d.ts", "components.d.ts"]
 }
