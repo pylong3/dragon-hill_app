@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { images } from '@/static/images/mapTable.ts'
 
 
@@ -94,7 +94,7 @@ let imgDatas = ref([
   },
 ])
 //鼠标移入时的x
-let initX = ref(200)
+let initX = ref(0)
 //实时x
 let realTimeX = ref(50)
 //模糊度因数
@@ -118,11 +118,13 @@ function init() {
     return {...item}
   })
   // console.log(imgDatas.value)
+  initX.value = 0
 }
 //鼠标离开
 function leaveMemory() {
   isGuodu.value = true
   init()
+  window.addEventListener('deviceorientation',tuoLuoYi)
 }
 //鼠标移入
 function enterMemory(e: MouseEvent) {
@@ -131,6 +133,7 @@ function enterMemory(e: MouseEvent) {
   initX.value = e.clientX
 }
 function touchStart(e: TouchEvent) {
+  window.removeEventListener('deviceorientation',tuoLuoYi)
   const touch = e.touches[0]!
    isGuodu.value = false
   // console.log(e)
@@ -146,15 +149,16 @@ function touchChange(e:TouchEvent) {
   realTimeX.value = touch.clientX
   xiugai()
 }
+let isXiugai = false
 function xiugai() {
   imgDatas.value = imgDatas.value.map((value, index) => {
-    //位移因数
-    const factor = (6 - index)*10
-    let newValue = {...value}
-    //更改数据
-    newValue.x = 0-addX.value *200/ factor
-    newValue.b = Math.abs(stillDatas[index]!.b + realTimeBlur.value)
-    return newValue
+  //位移因数
+  const factor = (6 - index)*10
+  let newValue = {...value}
+  //更改数据
+  newValue.x = 0-addX.value *200/ factor
+  newValue.b = Math.abs(stillDatas[index]!.b + realTimeBlur.value)
+  return newValue
   })
 }
 
@@ -176,6 +180,52 @@ function blink() {
   }, timeout);
 }
 blink()
+
+//移动端陀螺仪
+//监控陀螺仪的回调
+let tlyInit = 0
+let isTuoLuoYi = false
+function tuoLuoYi(e: DeviceOrientationEvent) {
+  if (Math.abs(e.gamma! - tlyInit) > 0.5) {
+    if (!isTuoLuoYi) {
+      isTuoLuoYi = true
+      requestAnimationFrame(() => {
+        realTimeX.value = e.gamma! * 7
+        xiugai()
+        tlyInit = e.gamma!
+        isTuoLuoYi = false
+      })
+    }
+  }
+}
+//获取陀螺仪授权
+let isShouquan = ref(false)
+async function getPermission() {
+  const deviceEvent = DeviceOrientationEvent as any
+  if (typeof deviceEvent.requestPermission === 'function') {
+    try {
+      const shouquanResult = await deviceEvent.requestPermission()
+      if (shouquanResult === 'granted') {
+        isShouquan.value = true
+      } else {
+        isShouquan.value = false
+        window.alert('您拒绝了授权陀螺仪')
+      }
+    } catch (e) {
+      window.alert(`授权请求失败，错误为：${e}`)
+    }
+  } else {
+    isShouquan.value = true
+  }
+}
+//添加事件监听
+onMounted(() => {
+  window.addEventListener('deviceorientation',tuoLuoYi)
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('deviceorientation',tuoLuoYi)
+})
+
 </script>
 
 
@@ -198,10 +248,18 @@ blink()
       />
     </div>
   </div>
+    <p v-show="!isShouquan">如果你陀螺仪没用请点击这个按钮</p>
+    <button v-show="!isShouquan" @click="getPermission()">授权</button>
 </template>
 
 
 <style scoped>
+p{
+  text-align: center;
+}
+button{
+  margin: 10px 150px;
+}
 .banner {
   position: relative;
   width: 100vw;
