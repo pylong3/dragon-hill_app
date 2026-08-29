@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { images } from '@/static/images/mapTable'
-import type { NavBar } from '@femessage/vant'
 
 //设置画布像素和大小
 let canvasSize = ref({ width: 1080, height: 1920 })
@@ -128,7 +127,7 @@ let penciColor = ref('')
 let sizeParam = ref(30)
 let penciSize = computed(() => sizeParam.value / 2)
 //菜单栏数据
-const menuData = ref(['1'])
+const menuData = ref([])
 //重置画布
 function resetHuabu() {
   penci!.clearRect(0, 0, canvasSize.value.width, canvasSize.value.height)
