@@ -257,7 +257,7 @@ function save() {
             </var-menu-select>
           </var-collapse-item>
           <var-collapse-item title="画笔大小" name="2">
-            <div style="height: 300px">
+            <div style="height: 100px">
               <var-slider v-model="sizeParam" min="1" direction="vertical" />
             </div>
           </var-collapse-item>
@@ -268,7 +268,7 @@ function save() {
             <var-button type="primary" @click="download()">下载</var-button>
           </var-collapse-item>
           <var-collapse-item title="透明度" name="5">
-            <div style="height: 300px">
+            <div style="height: 100px">
               <var-slider v-model="transparencyPramas" min="0" max="100" direction="vertical" />
             </div>
           </var-collapse-item>
@@ -317,7 +317,7 @@ function save() {
 <style scoped>
 .shezhi {
   position: absolute;
-  right: 0;
+  left: 0;
 }
 .background {
   width: 100%;

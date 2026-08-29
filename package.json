@@ -25,6 +25,7 @@
     "@types/node": "^24.13.2",
     "@vant/auto-import-resolver": "^1.3.0",
     "@varlet/import-resolver": "^3.20.3",
+    "@varlet/touch-emulator": "^3.20.6",
     "@vitejs/plugin-vue": "^6.0.7",
     "@vue/tsconfig": "^0.9.1",
     "npm-run-all2": "^9.0.2",
