@@ -230,6 +230,7 @@ onBeforeUnmount(() => {
 
 
 <template>
+  <div>
   <div class="banner" 
   @mouseenter="enterMemory($event)" 
   @mouseleave="leaveMemory()" 
@@ -249,7 +250,7 @@ onBeforeUnmount(() => {
     </div>
   </div>
     <p v-show="!isShouquan">如果你陀螺仪没用请点击这个按钮</p>
-    <button v-show="!isShouquan" @click="getPermission()">授权</button>
+    <button v-show="!isShouquan" @click="getPermission()">授权</button></div>
 </template>
 
 

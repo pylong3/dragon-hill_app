@@ -92,7 +92,7 @@ onUnmounted(() => {
 })
 </script>
 
-<template>
+<template><div>
   <div class="container" :style="coord">
     <span style="color: black">雨量：</span>
     <input
@@ -114,7 +114,7 @@ onUnmounted(() => {
       @touchmove="cloudMoveTouch($event)"
     ></div>
   </div>
-  <div class="rain" v-for="item in items" :key="item.id" :style="item.style"></div>
+  <div class="rain" v-for="item in items" :key="item.id" :style="item.style"></div></div>
 </template>
 
 <style scoped>

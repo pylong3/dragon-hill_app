@@ -15,6 +15,7 @@ let routeOption = ref([
   { name: '乌云', path: '/cloud' },
   { name: '你好', path: '/hellow' },
   { name: '可爱小猪', path: '/lovePig' },
+  { name:'画布',path:'/huabu'}
 ])
 //#endregion
 //#region定义方法
@@ -37,7 +38,7 @@ function houtui() {
 
 <template>
   <div class="container">
-    <var-app-bar :title="routeTitle">
+    <var-app-bar :title="routeTitle" class="header" style="height: 10vh;">
       <template #left>
         <var-button color="transparent" text-color="#fff" round text @click="houtui()">
           <var-icon name="chevron-left" :size="24" />
@@ -57,11 +58,15 @@ function houtui() {
       </template>
     </var-app-bar>
     <div class="tip" v-for="item in tipData" :key="item.id">已跳转至“{{ item.name }}”</div>
-    <router-view></router-view>
+    <router-view class="zhanshi"></router-view>
   </div>
 </template>
 
 <style scoped>
+.zhanshi {
+  width: 100vw;
+  height: 90vh;
+}
 .container {
   position: relative;
   width: 100vw;

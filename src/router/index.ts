@@ -3,6 +3,7 @@ import Hellow from "@/pages/Hellow.vue";
 import CloudRain from "@/pages/CloudRain.vue";
 import BilibiliHeard from "@/pages/BilibiliHeard.vue";
 import LovePig from "@/pages/LovePig.vue";
+import DrawBackground from "@/pages/DrawBackground.vue";
 
 // 配置路由
 const routes = [
@@ -25,7 +26,11 @@ const routes = [
   {
     'path': '/',
     'redirect': '/biliHeader'
-  } 
+  },
+  {
+    'path': '/huabu',
+    'component':DrawBackground
+  }
 ]
 
 export const router = createRouter({

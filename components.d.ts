@@ -17,7 +17,12 @@ declare module 'vue' {
     VarAppBar: typeof import('@varlet/ui')['_AppBarComponent']
     VarButton: typeof import('@varlet/ui')['_ButtonComponent']
     VarCell: typeof import('@varlet/ui')['_CellComponent']
+    VarCollapse: typeof import('@varlet/ui')['_CollapseComponent']
+    VarCollapseItem: typeof import('@varlet/ui')['_CollapseItemComponent']
     VarIcon: typeof import('@varlet/ui')['_IconComponent']
     VarMenu: typeof import('@varlet/ui')['_MenuComponent']
+    VarMenuOption: typeof import('@varlet/ui')['_MenuOptionComponent']
+    VarMenuSelect: typeof import('@varlet/ui')['_MenuSelectComponent']
+    VarSlider: typeof import('@varlet/ui')['_SliderComponent']
   }
 }
