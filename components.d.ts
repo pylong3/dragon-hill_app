@@ -11,6 +11,8 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    ElColorPicker: typeof import('element-plus/es')['ElColorPicker']
+    ElSlider: typeof import('element-plus/es')['ElSlider']
     Header: typeof import('./src/components/Header.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
@@ -24,5 +26,7 @@ declare module 'vue' {
     VarMenuOption: typeof import('@varlet/ui')['_MenuOptionComponent']
     VarMenuSelect: typeof import('@varlet/ui')['_MenuSelectComponent']
     VarSlider: typeof import('@varlet/ui')['_SliderComponent']
+    VarTab: typeof import('@varlet/ui')['_TabComponent']
+    VarTabs: typeof import('@varlet/ui')['_TabsComponent']
   }
 }

@@ -1,39 +1,44 @@
-import { createRouter,createWebHashHistory } from "vue-router";
-import Hellow from "@/pages/Hellow.vue";
-import CloudRain from "@/pages/CloudRain.vue";
-import BilibiliHeard from "@/pages/BilibiliHeard.vue";
-import LovePig from "@/pages/LovePig.vue";
-import DrawBackground from "@/pages/DrawBackground.vue";
+import { createRouter, createWebHashHistory } from 'vue-router'
+import Hellow from '@/pages/Hellow.vue'
+import CloudRain from '@/pages/CloudRain.vue'
+import BilibiliHeard from '@/pages/BilibiliHeard.vue'
+import LovePig from '@/pages/LovePig.vue'
+import DrawBackground from '@/pages/DrawBackground.vue'
+import ImageEditor from '@/pages/ImageEditor.vue'
 
 // 配置路由
 const routes = [
   {
-    'path': '/cloud',
-    'component': CloudRain
+    path: '/cloud',
+    component: CloudRain,
   },
   {
-    'path': '/hellow',
-    'component': Hellow
+    path: '/hellow',
+    component: Hellow,
   },
   {
-    'path': '/biliHeader',
-    'component': BilibiliHeard
+    path: '/biliHeader',
+    component: BilibiliHeard,
   },
   {
-    'path': '/lovePig',
-    'component': LovePig
+    path: '/lovePig',
+    component: LovePig,
   },
   {
-    'path': '/',
-    'redirect': '/biliHeader'
+    path: '/',
+    redirect: '/biliHeader',
   },
   {
-    'path': '/huabu',
-    'component':DrawBackground
-  }
+    path: '/huabu',
+    component: DrawBackground,
+  },
+  {
+    path: '/editor',
+    component: ImageEditor,
+  },
 ]
 
 export const router = createRouter({
   history: createWebHashHistory(),
-  routes
+  routes,
 })

@@ -4,21 +4,30 @@ import { images } from '@/static/images/mapTable'
 
 //设置画布像素和大小
 let canvasSize = ref({ width: 1080, height: 1920 })
-let canvasStyle = ref({
-  width: '75vw',
-  'aspect-ratio': '1080/1920',
+let canvasWidth = ref(75)
+let canvasPosition = ref({
+  left: window.innerWidth >= 768 ? window.innerWidth * 0.9 * 0.5 : window.innerWidth * 0.5,
+  top: window.innerWidth >= 768 ? window.innerHeight * 0.5 : window.innerWidth * 0.9 * 0.5,
+})
+let aspectRatio = '1080/1920'
+let canvasStyle = computed(() => {
+  return {
+    width: canvasWidth.value + 'vw',
+    aspectRatio,
+    left: canvasPosition.value.left + 'px',
+    top: canvasPosition.value.top + 'px',
+    transition: 'width 0.1s linear',
+  }
 })
 //画布相对于屏幕缩放比例
-let PXRatio = ref(1080 / (window.innerWidth * 0.75))
+let PXRatio = computed(
+  () => canvasSize.value.width / ((window.innerWidth * canvasWidth.value) / 100),
+)
 //判断设备改变画布大小
 if (window.innerWidth >= 768) {
   canvasSize.value.width = 1920
   canvasSize.value.height = 1080
-  canvasStyle.value['aspect-ratio'] = '1920/1080'
-  PXRatio.value = 1920 / (window.innerWidth * 0.75)
-  window.addEventListener('resize', () => {
-    PXRatio.value = 1920 / (window.innerWidth * 0.75)
-  })
+  aspectRatio = '1920/1080'
 }
 //拿到主画布上下文
 const huabu = ref<HTMLCanvasElement | null>()
@@ -94,13 +103,13 @@ function penciUp(e: PointerEvent) {
   img.src = url!
   img.onload = () => {
     penci!.globalAlpha = 1
-    penciMin!.clearRect(0,0,canvasSize.value.width, canvasSize.value.height)
+    penciMin!.clearRect(0, 0, canvasSize.value.width, canvasSize.value.height)
     penci!.drawImage(img, 0, 0)
     penci!.globalAlpha = transparency.value
+    pathData = []
+    //历史记录
+    saveState()
   }
-  pathData = []
-  //历史记录
-  saveState()
 }
 //透明度
 let transparencyPramas = ref(100)
@@ -110,19 +119,9 @@ watch(transparency, () => {
   penciMin!.globalAlpha = transparency.value
 })
 //笔尖颜色
-let penciColorList = [
-  `rgba(255,255,255)`,
-  `rgba(0,0,0)`,
-  `rgba(128,128,128)`,
-  `rgba(255,0,0)`,
-  `rgba(232,163,15)`,
-  `rgba(255,255,0)`,
-  `rgba(0,128,0)`,
-  `rgba(0,0,255)`,
-  `rgba(98,13,232)`,
-  `rgba(144,13,232)`,
-]
-let penciColor = ref('')
+let penciColor = defineModel({
+  default: 'rgb(0, 0, 0)',
+})
 //笔尖大小
 let sizeParam = ref(30)
 let penciSize = computed(() => sizeParam.value / 2)
@@ -227,37 +226,86 @@ function saveState() {
 function save() {
   localStorage.setItem('canvasUrl', JSON.stringify(canvasUrlList.value[0]))
 }
+//画布缩放
+function changeWidth(x: number) {
+  canvasWidth.value += x
+  canvasStyle.value.width = canvasWidth.value + 'vw'
+}
+function scalePC(e: WheelEvent) {
+  e.preventDefault()
+  if (Math.sign(e.deltaY) === -1) {
+    //放大
+    changeWidth(4)
+  } else {
+    //缩小
+    changeWidth(-4)
+  }
+}
+//画布变化
+//指针是否按下
+let isPointerDown: boolean = false
+//是否空格按下
+let isSpaceData: boolean = false
+function isSpace(v: boolean) {
+  isSpaceData = v
+}
+//用于实现变化功能的数据
+let helpChangeData = {}
+//用于移动画布的函数
+function huabuPositionChange(x: number, y: number) {
+  canvasPosition.value.left += x
+  canvasPosition.value.top += y
+}
+//指针按下
+function downToChange(e: PointerEvent) {
+  e.preventDefault()
+  isPointerDown = true
+  if (e.pointerType === 'mouse') {
+    if (e.button === 1) {
+    }
+  }
+}
+//指针移动
+function moveToChange(e: PointerEvent) {
+  e.preventDefault()
+  if (isPointerDown === true) {
+    if (e.pointerType === 'mouse') {
+    }
+  }
+}
+//指针抬起
+function upToChange(e: PointerEvent) {
+  e.preventDefault()
+  isPointerDown = false
+  if (e.pointerType === 'mouse') {
+  }
+}
 </script>
 
 <template>
   <div
-    class="background"
     :style="{
       background: `url(${images['huabuBackground.jpg']}) center/cover`,
       position: 'relative',
+      overflow: 'hidden',
     }"
-    ref="beijin"
+    @wheel="scalePC($event)"
+    @keydown.space="isSpace(true)"
+    @keyup.space="isSpace(false)"
+    @pointerdown="downToChange($event)"
+    @pointermove="moveToChange($event)"
+    @pointerup="upToChange($event)"
   >
     <var-menu class="shezhi">
       <var-button type="primary">设置</var-button>
       <template #menu>
         <var-collapse v-model="menuData">
-          <var-collapse-item title="颜色" name="1">
-            <var-menu-select v-model="penciColor">
-              <var-button type="primary">颜色</var-button>
-              <template #options>
-                <var-menu-option
-                  class="option"
-                  v-for="value in penciColorList"
-                  :label="value"
-                  :style="{ 'background-color': `${value}`, color: 'transparent' }"
-                />
-              </template>
-            </var-menu-select>
+          <var-collapse-item title="画笔颜色" name="1">
+            <el-color-picker v-model="penciColor" show-alpha style="z-index: 5" />
           </var-collapse-item>
           <var-collapse-item title="画笔大小" name="2">
-            <div style="height: 100px">
-              <var-slider v-model="sizeParam" min="1" direction="vertical" />
+            <div class="slider-demo-block">
+              <el-slider v-model="sizeParam" vertical height="100px" />
             </div>
           </var-collapse-item>
           <var-collapse-item title="重置" name="3">
@@ -266,9 +314,9 @@ function save() {
           <var-collapse-item title="下载" name="4">
             <var-button type="primary" @click="download()">下载</var-button>
           </var-collapse-item>
-          <var-collapse-item title="透明度" name="5">
-            <div style="height: 100px">
-              <var-slider v-model="transparencyPramas" min="0" max="100" direction="vertical" />
+          <var-collapse-item title="全局透明度" name="5">
+            <div class="slider-demo-block">
+              <el-slider v-model="transparencyPramas" vertical height="100px" />
             </div>
           </var-collapse-item>
           <var-collapse-item title="上传" name="6">
@@ -317,23 +365,27 @@ function save() {
 .shezhi {
   position: absolute;
   left: 0;
+  z-index: 4;
 }
-.background {
-  width: 100%;
-  height: 100%;
-  /* position: ; */
-  /* color: transparent; */
-}
+
 .canvas {
   position: absolute;
-  top: 50%;
-  left: 50%;
   transform: translate(-50%, -50%);
   border-radius: 15px;
   touch-action: none;
+  z-index: 2;
 }
 .canvasMin {
-  z-index: 2;
+  z-index: 3;
   pointer-events: auto;
+}
+.slider-demo-block {
+  max-width: 600px;
+  display: flex;
+  align-items: center;
+}
+.slider-demo-block .el-slider {
+  margin-top: 0;
+  margin-left: 12px;
 }
 </style>

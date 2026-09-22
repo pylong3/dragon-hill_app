@@ -8,8 +8,8 @@ interface message {
 }
 
 //移动云朵坐标
-let leftCoord = ref(31)
-let topCoord = ref(77)
+let leftCoord = ref(window.innerWidth * 0.2)
+let topCoord = ref(window.innerHeight * 0.2)
 let coord = computed<CSSProperties>(() => {
   return {
     left: leftCoord.value + 'px',
@@ -27,6 +27,7 @@ function cloudMoveStart(e: MouseEvent) {
 }
 function cloudMove(e: MouseEvent) {
   if (isDown.value) {
+    // console.log(e.clientX,mouseX)
     leftCoord.value += e.clientX - mouseX
     topCoord.value += e.clientY - mouseY
     mouseX = e.clientX
@@ -37,14 +38,16 @@ function cloudMove(e: MouseEvent) {
 let touchX: number
 let touchY: number
 function cloudStartTouch(e: TouchEvent) {
+  if(window.innerWidth >= 768) return
   const touch = e.touches[0]!
   touchX = touch.clientX
   touchY = touch.clientY
 }
 function cloudMoveTouch(e: TouchEvent) {
+  if(window.innerWidth >= 768) return
   e.preventDefault()
   const touch = e.touches[0]!
-  // console.log(touch)
+  // console.log('调用touch')
   leftCoord.value += touch.clientX - touchX
   topCoord.value += touch.clientY - touchY
   touchX = touch.clientX
@@ -92,7 +95,8 @@ onUnmounted(() => {
 })
 </script>
 
-<template><div>
+<template>
+<div>
   <div class="container" :style="coord">
     <span style="color: black">雨量：</span>
     <input
@@ -114,15 +118,13 @@ onUnmounted(() => {
       @touchmove="cloudMoveTouch($event)"
     ></div>
   </div>
-  <div class="rain" v-for="item in items" :key="item.id" :style="item.style"></div></div>
+  <div class="rain" v-for="item in items" :key="item.id" :style="item.style"></div>
+  </div>
 </template>
 
 <style scoped>
 .container {
   position: absolute;
-  left: 100px;
-  top: 100px;
-  margin: 0 auto;
   width: 300px;
   height: 500px;
   /* border: 1px solid rgba(128, 128, 128, 0.5); */

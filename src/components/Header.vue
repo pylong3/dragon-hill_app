@@ -1,44 +1,53 @@
 <script setup lang="ts">
 import { router } from '@/router'
 import { ref } from 'vue'
-import { nanoid } from 'nanoid'
 
 // #region 路由跳转
 //#region定义数据
 //提示
-let tipData = ref<{ id: string, name: string }[]>([])
+// let tipData = ref<{ id: string; name: string }[]>([])
 //响应式标题
-let routeTitle = ref('')
+// let routeTitle = ref('')
 //路由选择数据
 let routeOption = ref([
   { name: 'b站头部', path: '/biliHeader' },
   { name: '乌云', path: '/cloud' },
   { name: '你好', path: '/hellow' },
   { name: '可爱小猪', path: '/lovePig' },
-  { name:'画布',path:'/huabu'}
+  { name: '画布', path: '/huabu' },
+  { name: '编辑图片', path: '/editor' },
 ])
 //#endregion
 //#region定义方法
 //跳转时触发
 function tipAnima(routePath: string, name: string) {
   router.push(routePath)
-  routeTitle.value = name
-  tipData.value.push({
-    id: nanoid(),
-    name: name,
-  })
+  // routeTitle.value = name
+  // tipData.value.push({
+  //   id: nanoid(),
+  //   name: name,
+  // })
 }
 //后退
-function houtui() {
-  router.go(-1)
-}
+// function houtui() {
+//   router.go(-1)
+// }
 //#endregion
 // #endregion
+//选项卡默认
+const active = ref(0)
+//判断设备
+let isPC = false
+let viewClass = 'zhanshi'
+if (window.innerWidth >= 768) {
+  isPC = true
+  viewClass = 'zhanshiPC'
+}
 </script>
 
 <template>
   <div class="container">
-    <var-app-bar :title="routeTitle" class="header" style="height: 10vh;">
+    <!-- <var-app-bar :title="routeTitle" class="header" style="height: 10vh">
       <template #left>
         <var-button color="transparent" text-color="#fff" round text @click="houtui()">
           <var-icon name="chevron-left" :size="24" />
@@ -57,15 +66,51 @@ function houtui() {
         </var-menu>
       </template>
     </var-app-bar>
-    <div class="tip" v-for="item in tipData" :key="item.id">已跳转至“{{ item.name }}”</div>
-    <router-view class="zhanshi"></router-view>
+    <div class="tip" v-for="item in tipData" :key="item.id">已跳转至“{{ item.name }}”</div> -->
+    <var-tabs
+      v-if="!isPC"
+      elevation
+      color="var(--color-primary)"
+      active-color="var(--color-on-primary)"
+      inactive-color="var(--color-on-info)"
+      v-model:active="active"
+    >
+      <var-tab v-for="item in routeOption" @click="tipAnima(item.path, item.name)">
+        {{ item.name }}
+      </var-tab>
+    </var-tabs>
+    <var-tabs
+      v-if="isPC"
+      class="tabs-example-vertical"
+      elevation
+      layout-direction="vertical"
+      color="var(--color-primary)"
+      active-color="var(--color-on-primary)"
+      inactive-color="var(--color-on-info)"
+      v-model:active="active"
+    >
+      <var-tab v-for="item in routeOption" @click="tipAnima(item.path, item.name)">
+        {{ item.name }}
+      </var-tab>
+    </var-tabs>
+    <router-view :class="viewClass"></router-view>
   </div>
 </template>
 
 <style scoped>
+.tabs-example-vertical {
+  float: left;
+  width: 10vw !important;
+  height: 100vh !important;
+}
 .zhanshi {
   width: 100vw;
   height: 90vh;
+}
+.zhanshiPC {
+  float: left;
+  width: 90vw;
+  height: 100vh;
 }
 .container {
   position: relative;
