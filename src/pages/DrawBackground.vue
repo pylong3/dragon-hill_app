@@ -51,19 +51,21 @@ onMounted(() => {
 let isDraw = false
 let isDot = false
 let pathData: Array<[number, number]> = []
+let isUsePenci = true
 //下笔
 let oldX = 0
 let oldY = 0
 function penciDown(e: PointerEvent) {
+  if (isUsePenci !== true) return
   e.preventDefault()
   //重置数据
   isDraw = true
   isDot = true
   //计算画笔相对位置
-  oldX = e.offsetX * PXRatio.value
-  oldY = e.offsetY * PXRatio.value
-  //设置画笔
-  penciMin!.lineCap = 'round'
+  ;((oldX = e.offsetX * PXRatio.value),
+    (oldY = e.offsetY * PXRatio.value),
+    //设置画笔
+    (penciMin!.lineCap = 'round'))
   penciMin!.lineJoin = 'round'
   penciMin?.beginPath()
   penciMin!.lineWidth = penciSize.value
@@ -72,6 +74,7 @@ function penciDown(e: PointerEvent) {
 }
 //运笔
 function penciMove(e: PointerEvent) {
+  if (isUsePenci !== true) return
   e.preventDefault()
   isDot = false
   if (isDraw) {
@@ -89,6 +92,7 @@ function penciMove(e: PointerEvent) {
 }
 //抬笔
 function penciUp(e: PointerEvent) {
+  if (isUsePenci !== true) return
   e.preventDefault()
   isDraw = false
   //若只点击
@@ -242,15 +246,24 @@ function scalePC(e: WheelEvent) {
   }
 }
 //画布变化
-//指针是否按下
-let isPointerDown: boolean = false
 //是否空格按下
 let isSpaceData: boolean = false
-function isSpace(v: boolean) {
+function isSpace(v: boolean, e: KeyboardEvent) {
+  e.preventDefault()
   isSpaceData = v
+  isUsePenci = !v
 }
+//挂载后自动获取焦点
+const huabuBaba = ref<HTMLDivElement>()
+onMounted(() => {
+  huabuBaba.value!.focus()
+})
 //用于实现变化功能的数据
-let helpChangeData = {}
+let helpChangeData = {
+  //开始移动画布时，指针按下时坐标
+  oldMoveDownX: 0,
+  oldMoveDownY: 0,
+}
 //用于移动画布的函数
 function huabuPositionChange(x: number, y: number) {
   canvasPosition.value.left += x
@@ -258,26 +271,38 @@ function huabuPositionChange(x: number, y: number) {
 }
 //指针按下
 function downToChange(e: PointerEvent) {
-  e.preventDefault()
-  isPointerDown = true
   if (e.pointerType === 'mouse') {
-    if (e.button === 1) {
+    if (isSpaceData === true) {
+      if (e.button === 0) {
+        helpChangeData.oldMoveDownX = e.clientX
+        helpChangeData.oldMoveDownY = e.clientY
+      }
     }
   }
 }
 //指针移动
 function moveToChange(e: PointerEvent) {
   e.preventDefault()
-  if (isPointerDown === true) {
-    if (e.pointerType === 'mouse') {
+  if (e.pointerType === 'mouse') {
+    if (isSpaceData === true) {
+      if (e.buttons === 1) {
+        huabuPositionChange(
+          e.clientX - helpChangeData.oldMoveDownX,
+          e.clientY - helpChangeData.oldMoveDownY,
+        )
+        helpChangeData.oldMoveDownX = e.clientX
+        helpChangeData.oldMoveDownY = e.clientY
+      }
     }
   }
 }
+
 //指针抬起
 function upToChange(e: PointerEvent) {
   e.preventDefault()
-  isPointerDown = false
   if (e.pointerType === 'mouse') {
+    if (e.button === 0) {
+    }
   }
 }
 </script>
@@ -289,12 +314,14 @@ function upToChange(e: PointerEvent) {
       position: 'relative',
       overflow: 'hidden',
     }"
+    tabindex="0"
     @wheel="scalePC($event)"
-    @keydown.space="isSpace(true)"
-    @keyup.space="isSpace(false)"
+    @keydown.space.prevent="isSpace(true, $event)"
+    @keyup.space.prevent="isSpace(false, $event)"
     @pointerdown="downToChange($event)"
     @pointermove="moveToChange($event)"
     @pointerup="upToChange($event)"
+    ref="huabuBaba"
   >
     <var-menu class="shezhi">
       <var-button type="primary">设置</var-button>
