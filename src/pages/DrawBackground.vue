@@ -10,15 +10,15 @@ let canvasPosition = ref({
   top: window.innerWidth >= 768 ? window.innerHeight * 0.5 : window.innerWidth * 0.9 * 0.5,
 })
 let canvasRotateAngle = ref(0)
-let aspectRatio = '1080/1920'
+let aspectRatio = ref('1080/1920')
 let canvasStyle = computed(() => {
   return {
     width: canvasWidth.value + 'vw',
-    aspectRatio,
+    aspectRatio: aspectRatio.value,
     left: canvasPosition.value.left + 'px',
     top: canvasPosition.value.top + 'px',
     transition: 'width 0.1s linear',
-    transform: `translate(-50%, -50%) rotateZ(${canvasRotateAngle.value}deg)`,
+    transform: `translate(-50%, -50%) rotateZ(${canvasRotateAngle.value}rad)`,
   }
 })
 //画布相对于屏幕缩放比例
@@ -29,7 +29,7 @@ let PXRatio = computed(
 if (window.innerWidth >= 768) {
   canvasSize.value.width = 1920
   canvasSize.value.height = 1080
-  aspectRatio = '1920/1080'
+  aspectRatio.value = '1920/1080'
 }
 //拿到主画布上下文
 const huabu = ref<HTMLCanvasElement | null>()
@@ -232,21 +232,6 @@ function saveState() {
 function save() {
   localStorage.setItem('canvasUrl', JSON.stringify(canvasUrlList.value[0]))
 }
-//画布缩放
-function changeWidth(x: number) {
-  canvasWidth.value += x
-  canvasStyle.value.width = canvasWidth.value + 'vw'
-}
-function scalePC(e: WheelEvent) {
-  e.preventDefault()
-  if (Math.sign(e.deltaY) === -1) {
-    //放大
-    changeWidth(4)
-  } else {
-    //缩小
-    changeWidth(-4)
-  }
-}
 //画布变化
 //是否空格按下
 let isSpaceData: boolean = false
@@ -268,22 +253,63 @@ let helpChangeData = {
   //用来计算角度增量的初始角度
   oldAngle: 0,
 }
+//pc端画布缩放
+function changeWidth(x: number) {
+  canvasWidth.value += x
+  canvasStyle.value.width = canvasWidth.value + 'vw'
+}
+function scalePC(e: WheelEvent) {
+  e.preventDefault()
+  if (Math.sign(e.deltaY) === -1) {
+    //放大
+    changeWidth(4)
+  } else {
+    //缩小
+    changeWidth(-4)
+  }
+}
 //用于移动画布的函数
 function huabuPositionChange(x: number, y: number) {
   canvasPosition.value.left += x
   canvasPosition.value.top += y
 }
+//用于旋转画布的函数
+function huabuRotate(positionX: number, positionY: number) {
+  let x = positionX - canvasPosition.value.left
+  let y = positionY - canvasPosition.value.top
+  let newAngle = Math.atan2(y, x)
+  let addAngle: number
+  if (Math.sign(newAngle) !== Math.sign(helpChangeData.oldAngle)) {
+    if (newAngle < Math.PI / 2 || newAngle > -Math.PI / 2) {
+      addAngle = newAngle - helpChangeData.oldAngle
+    } else {
+      addAngle =
+        newAngle - helpChangeData.oldAngle < 0
+          ? newAngle - helpChangeData.oldAngle + Math.PI * 2
+          : Math.PI * 2 - (newAngle - helpChangeData.oldAngle)
+    }
+  } else {
+    addAngle = newAngle - helpChangeData.oldAngle
+  }
+  canvasRotateAngle.value += addAngle
+  helpChangeData.oldAngle = newAngle
+}
 //指针按下
 function downToChange(e: PointerEvent) {
   //pc端
   if (e.pointerType === 'mouse') {
+    //空格按下
     if (isSpaceData === true) {
+      //鼠标左键移动画布
       if (e.button === 0) {
         helpChangeData.oldMoveDownX = e.clientX
         helpChangeData.oldMoveDownY = e.clientY
-      } else if (e.button === 2) {
-        let x = e.offsetX - canvasPosition.value.left
-        let y = e.offsetY - canvasPosition.value.top
+      }
+      //鼠标右键旋转画布
+      else if (e.button === 2) {
+        let x = e.clientX - window.innerWidth * 0.1 - canvasPosition.value.left
+        let y = e.clientY - canvasPosition.value.top
+        helpChangeData.oldAngle = Math.atan2(y, x)
       }
     }
   }
@@ -291,8 +317,10 @@ function downToChange(e: PointerEvent) {
 //指针移动
 function moveToChange(e: PointerEvent) {
   e.preventDefault()
+  //pc端
   if (e.pointerType === 'mouse') {
     if (isSpaceData === true) {
+      //移动画布
       if (e.buttons === 1) {
         huabuPositionChange(
           e.clientX - helpChangeData.oldMoveDownX,
@@ -300,8 +328,11 @@ function moveToChange(e: PointerEvent) {
         )
         helpChangeData.oldMoveDownX = e.clientX
         helpChangeData.oldMoveDownY = e.clientY
-      } else if (e.buttons === 2) {
-      } 
+      }
+      //旋转画布
+      else if (e.buttons === 2) {
+        huabuRotate(e.clientX - window.innerWidth * 0.1, e.clientY)
+      }
     }
   }
 }
