@@ -9,6 +9,7 @@ let canvasPosition = ref({
   left: window.innerWidth >= 768 ? window.innerWidth * 0.9 * 0.5 : window.innerWidth * 0.5,
   top: window.innerWidth >= 768 ? window.innerHeight * 0.5 : window.innerWidth * 0.9 * 0.5,
 })
+let canvasRotateAngle = ref(0)
 let aspectRatio = '1080/1920'
 let canvasStyle = computed(() => {
   return {
@@ -17,6 +18,7 @@ let canvasStyle = computed(() => {
     left: canvasPosition.value.left + 'px',
     top: canvasPosition.value.top + 'px',
     transition: 'width 0.1s linear',
+    transform: `translate(-50%, -50%) rotateZ(${canvasRotateAngle.value}deg)`,
   }
 })
 //画布相对于屏幕缩放比例
@@ -263,6 +265,8 @@ let helpChangeData = {
   //开始移动画布时，指针按下时坐标
   oldMoveDownX: 0,
   oldMoveDownY: 0,
+  //用来计算角度增量的初始角度
+  oldAngle: 0,
 }
 //用于移动画布的函数
 function huabuPositionChange(x: number, y: number) {
@@ -271,11 +275,15 @@ function huabuPositionChange(x: number, y: number) {
 }
 //指针按下
 function downToChange(e: PointerEvent) {
+  //pc端
   if (e.pointerType === 'mouse') {
     if (isSpaceData === true) {
       if (e.button === 0) {
         helpChangeData.oldMoveDownX = e.clientX
         helpChangeData.oldMoveDownY = e.clientY
+      } else if (e.button === 2) {
+        let x = e.offsetX - canvasPosition.value.left
+        let y = e.offsetY - canvasPosition.value.top
       }
     }
   }
@@ -292,7 +300,8 @@ function moveToChange(e: PointerEvent) {
         )
         helpChangeData.oldMoveDownX = e.clientX
         helpChangeData.oldMoveDownY = e.clientY
-      }
+      } else if (e.buttons === 2) {
+      } 
     }
   }
 }
@@ -321,6 +330,7 @@ function upToChange(e: PointerEvent) {
     @pointerdown="downToChange($event)"
     @pointermove="moveToChange($event)"
     @pointerup="upToChange($event)"
+    @contextmenu.prevent
     ref="huabuBaba"
   >
     <var-menu class="shezhi">
@@ -397,7 +407,6 @@ function upToChange(e: PointerEvent) {
 
 .canvas {
   position: absolute;
-  transform: translate(-50%, -50%);
   border-radius: 15px;
   touch-action: none;
   z-index: 2;
