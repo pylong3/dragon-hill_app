@@ -246,12 +246,14 @@ onMounted(() => {
   huabuBaba.value!.focus()
 })
 //用于实现变化功能的数据
-let helpChangeData = {
+let HCData = {
   //开始移动画布时，指针按下时坐标
   oldMoveDownX: 0,
   oldMoveDownY: 0,
   //用来计算角度增量的初始角度
   oldAngle: 0,
+  //存放触摸点ID
+  touchID: [] as number[],
 }
 //pc端画布缩放
 function changeWidth(x: number) {
@@ -279,20 +281,20 @@ function huabuRotate(positionX: number, positionY: number) {
   let y = positionY - canvasPosition.value.top
   let newAngle = Math.atan2(y, x)
   let addAngle: number
-  if (Math.sign(newAngle) !== Math.sign(helpChangeData.oldAngle)) {
+  if (Math.sign(newAngle) !== Math.sign(HCData.oldAngle)) {
     if (newAngle < Math.PI / 2 || newAngle > -Math.PI / 2) {
-      addAngle = newAngle - helpChangeData.oldAngle
+      addAngle = newAngle - HCData.oldAngle
     } else {
       addAngle =
-        newAngle - helpChangeData.oldAngle < 0
-          ? newAngle - helpChangeData.oldAngle + Math.PI * 2
-          : Math.PI * 2 - (newAngle - helpChangeData.oldAngle)
+        newAngle - HCData.oldAngle < 0
+          ? newAngle - HCData.oldAngle + Math.PI * 2
+          : Math.PI * 2 - (newAngle - HCData.oldAngle)
     }
   } else {
-    addAngle = newAngle - helpChangeData.oldAngle
+    addAngle = newAngle - HCData.oldAngle
   }
   canvasRotateAngle.value += addAngle
-  helpChangeData.oldAngle = newAngle
+  HCData.oldAngle = newAngle
 }
 //指针按下
 function downToChange(e: PointerEvent) {
@@ -302,15 +304,25 @@ function downToChange(e: PointerEvent) {
     if (isSpaceData === true) {
       //鼠标左键移动画布
       if (e.button === 0) {
-        helpChangeData.oldMoveDownX = e.clientX
-        helpChangeData.oldMoveDownY = e.clientY
+        HCData.oldMoveDownX = e.clientX
+        HCData.oldMoveDownY = e.clientY
       }
       //鼠标右键旋转画布
       else if (e.button === 2) {
         let x = e.clientX - window.innerWidth * 0.1 - canvasPosition.value.left
         let y = e.clientY - canvasPosition.value.top
-        helpChangeData.oldAngle = Math.atan2(y, x)
+        HCData.oldAngle = Math.atan2(y, x)
       }
+    }
+  }
+  //移动端
+  else if (e.pointerType === 'touch') {
+    //增加触摸点
+    HCData.touchID.push(e.pointerId)
+    //判断当前触摸点数量
+    if (HCData.touchID.length >= 2) {
+      isUsePenci = false
+      isDot = false
     }
   }
 }
@@ -322,12 +334,9 @@ function moveToChange(e: PointerEvent) {
     if (isSpaceData === true) {
       //移动画布
       if (e.buttons === 1) {
-        huabuPositionChange(
-          e.clientX - helpChangeData.oldMoveDownX,
-          e.clientY - helpChangeData.oldMoveDownY,
-        )
-        helpChangeData.oldMoveDownX = e.clientX
-        helpChangeData.oldMoveDownY = e.clientY
+        huabuPositionChange(e.clientX - HCData.oldMoveDownX, e.clientY - HCData.oldMoveDownY)
+        HCData.oldMoveDownX = e.clientX
+        HCData.oldMoveDownY = e.clientY
       }
       //旋转画布
       else if (e.buttons === 2) {
@@ -335,14 +344,28 @@ function moveToChange(e: PointerEvent) {
       }
     }
   }
+  //移动端
+  if (e.pointerType === 'touch') {
+    if (HCData.touchID.length >= 2) {
+    }
+  }
 }
 
 //指针抬起
 function upToChange(e: PointerEvent) {
   e.preventDefault()
+  //pc端
   if (e.pointerType === 'mouse') {
     if (e.button === 0) {
     }
+  }
+  //移动端
+  if (e.pointerType === 'touch') {
+    isUsePenci = true
+    isDot = true
+    //抬起时删除对应触摸点id
+    let index = HCData.touchID.indexOf(e.pointerId)
+    HCData.touchID.splice(index, 1)
   }
 }
 </script>
