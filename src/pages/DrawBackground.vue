@@ -7,7 +7,7 @@ let canvasSize = ref({ width: 1080, height: 1920 })
 let canvasWidth = ref(75)
 let canvasPosition = ref({
   left: window.innerWidth >= 768 ? window.innerWidth * 0.9 * 0.5 : window.innerWidth * 0.5,
-  top: window.innerWidth >= 768 ? window.innerHeight * 0.5 : window.innerWidth * 0.9 * 0.5,
+  top: window.innerWidth >= 768 ? window.innerHeight * 0.5 : window.innerHeight * 0.9 * 0.5,
 })
 let canvasRotateAngle = ref(0)
 let aspectRatio = ref('1080/1920')
@@ -254,6 +254,13 @@ let HCData = {
   oldAngle: 0,
   //存放触摸点ID
   touchID: [] as number[],
+  //存放初始触摸点坐标
+  oldTouchsXY: [
+    { x: 0, y: 0 },
+    { x: 0, y: 0 },
+  ],
+  //触摸旋转时的原点
+  spinOrigin: { x: 0, y: 0 },
 }
 //pc端画布缩放
 function changeWidth(x: number) {
@@ -323,6 +330,17 @@ function downToChange(e: PointerEvent) {
     if (HCData.touchID.length >= 2) {
       isUsePenci = false
       isDot = false
+      //记录手指初始位置
+      if (e.pointerId === HCData.touchID[0]) {
+        HCData.oldTouchsXY[0]!.x = e.clientX
+        HCData.oldTouchsXY[0]!.y = e.clientY - window.innerHeight * 0.1
+      } else if (e.pointerId === HCData.touchID[HCData.touchID.length - 1]) {
+        HCData.oldTouchsXY[1]!.x = e.clientX
+        HCData.oldTouchsXY[1]!.y = e.clientY - window.innerHeight * 0.1
+      }
+      //计算旋转原点
+      HCData.spinOrigin.x = HCData.oldTouchsXY[1]!.x - HCData.oldTouchsXY[0]!.x
+      HCData.spinOrigin.y = HCData.oldTouchsXY[1]!.y - HCData.oldTouchsXY[0]!.y
     }
   }
 }
@@ -347,6 +365,8 @@ function moveToChange(e: PointerEvent) {
   //移动端
   if (e.pointerType === 'touch') {
     if (HCData.touchID.length >= 2) {
+      //缩放
+      let distant = Math.hypot()
     }
   }
 }
