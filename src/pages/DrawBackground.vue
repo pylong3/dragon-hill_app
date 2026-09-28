@@ -366,7 +366,29 @@ function moveToChange(e: PointerEvent) {
   if (e.pointerType === 'touch') {
     if (HCData.touchID.length >= 2) {
       //缩放
-      let distant = Math.hypot()
+      ;(function () {
+        //计算初始两点距离
+        let oldX = HCData.oldTouchsXY[1]!.x - HCData.oldTouchsXY[0]!.x
+        let oldY = HCData.oldTouchsXY[1]!.y - HCData.oldTouchsXY[0]!.y
+        let oldDistant = Math.hypot(oldX, oldY)
+        //计算更新后距离
+        let x = 0
+        let y = 0
+        if (HCData.touchID.indexOf(e.pointerId) === 0) {
+          x = HCData.oldTouchsXY[1]!.x - e.clientX
+          y = HCData.oldTouchsXY[1]!.y - e.clientY + window.innerHeight * 0.1
+        } else if (HCData.touchID.indexOf(e.pointerId) === 1) {
+          x = e.clientX - HCData.oldTouchsXY[0]!.x
+          y = e.clientY - window.innerHeight * 0.1 - HCData.oldTouchsXY[0]!.y
+        }
+        let distant = Math.hypot(x, y)
+        //把增加的距离换算成vw的百分比
+        canvasWidth.value += (distant - oldDistant) / window.innerWidth
+      })()
+      //移动
+      ;(function () {
+        let x = 0
+      })()
     }
   }
 }
