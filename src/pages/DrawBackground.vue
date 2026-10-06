@@ -21,16 +21,19 @@ let canvasStyle = computed(() => {
     transform: `translate(-50%, -50%) rotateZ(${canvasRotateAngle.value}rad)`,
   }
 })
+
 //画布相对于屏幕缩放比例
 let PXRatio = computed(
   () => canvasSize.value.width / ((window.innerWidth * canvasWidth.value) / 100),
 )
+
 //判断设备改变画布大小
 if (window.innerWidth >= 768) {
   canvasSize.value.width = 1920
   canvasSize.value.height = 1080
   aspectRatio.value = '1920/1080'
 }
+
 //拿到主画布上下文
 const huabu = ref<HTMLCanvasElement | null>()
 let penci: CanvasRenderingContext2D | null
@@ -40,6 +43,7 @@ onMounted(() => {
   penci!.fillStyle = '#ffffff'
   penci!.fillRect(0, 0, canvasSize.value.width, canvasSize.value.height)
 })
+
 //拿到小画布上下文
 const huabuMin = ref<HTMLCanvasElement | null>()
 let penciMin: CanvasRenderingContext2D | null
@@ -48,6 +52,7 @@ onMounted(() => {
   penciMin!.globalAlpha = 1
   penciMin!.clearRect(0, 0, canvasSize.value.width, canvasSize.value.height)
 })
+
 //画画的三个回调
 //数据
 let isDraw = false
@@ -74,6 +79,7 @@ function penciDown(e: PointerEvent) {
   penciMin?.moveTo(oldX, oldY)
   penciMin!.strokeStyle = penciColor.value
 }
+
 //运笔
 function penciMove(e: PointerEvent) {
   if (isUsePenci !== true) return
@@ -92,6 +98,7 @@ function penciMove(e: PointerEvent) {
     penciMin!.stroke()
   }
 }
+
 //抬笔
 function penciUp(e: PointerEvent) {
   if (isUsePenci !== true) return
@@ -117,6 +124,7 @@ function penciUp(e: PointerEvent) {
     saveState()
   }
 }
+
 //透明度
 let transparencyPramas = ref(100)
 let transparency = computed(() => transparencyPramas.value / 100)
@@ -133,6 +141,7 @@ let sizeParam = ref(30)
 let penciSize = computed(() => sizeParam.value / 2)
 //菜单栏数据
 const menuData = ref([])
+
 //重置画布
 function resetHuabu() {
   penci!.clearRect(0, 0, canvasSize.value.width, canvasSize.value.height)
@@ -142,6 +151,7 @@ function resetHuabu() {
   penci!.globalAlpha = transparency.value
   saveState()
 }
+
 //下载
 function download() {
   huabu.value!.toBlob((blob) => {
@@ -153,11 +163,13 @@ function download() {
     URL.revokeObjectURL(url)
   }, 'image/png')
 }
+
 //触发上传文件操作
 let uploadElement = ref()
 function uploadImage() {
   uploadElement.value.click()
 }
+
 //处理上传图片
 function handleImage() {
   //获取图片
@@ -186,6 +198,7 @@ function handleImage() {
     console.error('图片加载失败')
   }
 }
+
 //撤销功能
 //数据
 function arr() {
@@ -200,6 +213,7 @@ onMounted(() => {
     rander()
   }
 })
+
 //渲染
 function rander() {
   const img = document.createElement('img')
@@ -211,6 +225,7 @@ function rander() {
     penci!.globalAlpha = transparency.value
   }
 }
+
 //撤销
 function back() {
   if (canvasUrlList.value.length > 1) {
@@ -220,6 +235,7 @@ function back() {
     console.log('撤销完成')
   }
 }
+
 //记录
 function saveState() {
   if (canvasUrlList.value.length >= 30) {
@@ -228,10 +244,12 @@ function saveState() {
   const url = huabu.value!.toDataURL()
   canvasUrlList.value.unshift(url)
 }
+
 //保存
 function save() {
   localStorage.setItem('canvasUrl', JSON.stringify(canvasUrlList.value[0]))
 }
+
 //画布变化
 //是否空格按下
 let isSpaceData: boolean = false
@@ -240,33 +258,37 @@ function isSpace(v: boolean, e: KeyboardEvent) {
   isSpaceData = v
   isUsePenci = !v
 }
+
 //挂载后自动获取焦点
 const huabuBaba = ref<HTMLDivElement>()
 onMounted(() => {
   huabuBaba.value!.focus()
 })
+
 //用于实现变化功能的数据
-let HCData = {
-  //开始移动画布时，指针按下时坐标
+let helpData = {
+  //pc端开始移动画布时，指针按下时坐标
   oldMoveDownX: 0,
   oldMoveDownY: 0,
-  //用来计算角度增量的初始角度
+  //pc端用来计算角度增量的初始角度
   oldAngle: 0,
-  //存放触摸点ID
-  touchID: [] as number[],
-  //存放初始触摸点坐标
-  oldTouchsXY: [
-    { x: 0, y: 0 },
-    { x: 0, y: 0 },
-  ],
-  //触摸旋转时的原点
-  spinOrigin: { x: 0, y: 0 },
+  //移动端触点
+  pointers:new Map(),
+  //移动端双指中点
+  lastMidX: 0,
+  lastMidY: 0,
+  //移动端双指移动距离
+  lastDistance: 0,
+  //移动端双指角度
+  lastAngle: 0
 }
+
 //pc端画布缩放
 function changeWidth(x: number) {
   canvasWidth.value += x
   canvasStyle.value.width = canvasWidth.value + 'vw'
 }
+
 function scalePC(e: WheelEvent) {
   e.preventDefault()
   if (Math.sign(e.deltaY) === -1) {
@@ -277,32 +299,35 @@ function scalePC(e: WheelEvent) {
     changeWidth(-4)
   }
 }
+
 //用于移动画布的函数
 function huabuPositionChange(x: number, y: number) {
   canvasPosition.value.left += x
   canvasPosition.value.top += y
 }
+
 //用于旋转画布的函数
 function huabuRotate(positionX: number, positionY: number) {
   let x = positionX - canvasPosition.value.left
   let y = positionY - canvasPosition.value.top
   let newAngle = Math.atan2(y, x)
   let addAngle: number
-  if (Math.sign(newAngle) !== Math.sign(HCData.oldAngle)) {
+  if (Math.sign(newAngle) !== Math.sign(helpData.oldAngle)) {
     if (newAngle < Math.PI / 2 || newAngle > -Math.PI / 2) {
-      addAngle = newAngle - HCData.oldAngle
+      addAngle = newAngle - helpData.oldAngle
     } else {
       addAngle =
-        newAngle - HCData.oldAngle < 0
-          ? newAngle - HCData.oldAngle + Math.PI * 2
-          : Math.PI * 2 - (newAngle - HCData.oldAngle)
+        newAngle - helpData.oldAngle < 0
+          ? newAngle - helpData.oldAngle + Math.PI * 2
+          : Math.PI * 2 - (newAngle - helpData.oldAngle)
     }
   } else {
-    addAngle = newAngle - HCData.oldAngle
+    addAngle = newAngle - helpData.oldAngle
   }
   canvasRotateAngle.value += addAngle
-  HCData.oldAngle = newAngle
+  helpData.oldAngle = newAngle
 }
+
 //指针按下
 function downToChange(e: PointerEvent) {
   //pc端
@@ -311,39 +336,31 @@ function downToChange(e: PointerEvent) {
     if (isSpaceData === true) {
       //鼠标左键移动画布
       if (e.button === 0) {
-        HCData.oldMoveDownX = e.clientX
-        HCData.oldMoveDownY = e.clientY
+        helpData.oldMoveDownX = e.clientX
+        helpData.oldMoveDownY = e.clientY
       }
       //鼠标右键旋转画布
       else if (e.button === 2) {
         let x = e.clientX - window.innerWidth * 0.1 - canvasPosition.value.left
         let y = e.clientY - canvasPosition.value.top
-        HCData.oldAngle = Math.atan2(y, x)
+        helpData.oldAngle = Math.atan2(y, x)
       }
     }
   }
   //移动端
   else if (e.pointerType === 'touch') {
-    //增加触摸点
-    HCData.touchID.push(e.pointerId)
-    //判断当前触摸点数量
-    if (HCData.touchID.length >= 2) {
+    helpData.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+    if (helpData.pointers.size >= 2) {
+      //取消画画状态
+      isDraw = false
       isUsePenci = false
-      isDot = false
-      //记录手指初始位置
-      if (e.pointerId === HCData.touchID[0]) {
-        HCData.oldTouchsXY[0]!.x = e.clientX
-        HCData.oldTouchsXY[0]!.y = e.clientY - window.innerHeight * 0.1
-      } else if (e.pointerId === HCData.touchID[HCData.touchID.length - 1]) {
-        HCData.oldTouchsXY[1]!.x = e.clientX
-        HCData.oldTouchsXY[1]!.y = e.clientY - window.innerHeight * 0.1
-      }
-      //计算旋转原点
-      HCData.spinOrigin.x = HCData.oldTouchsXY[1]!.x - HCData.oldTouchsXY[0]!.x
-      HCData.spinOrigin.y = HCData.oldTouchsXY[1]!.y - HCData.oldTouchsXY[0]!.y
+      pathData = []
+      penciMin!.clearRect(0, 0, canvasSize.value.width, canvasSize.value.height)
+      
     }
   }
 }
+
 //指针移动
 function moveToChange(e: PointerEvent) {
   e.preventDefault()
@@ -352,9 +369,9 @@ function moveToChange(e: PointerEvent) {
     if (isSpaceData === true) {
       //移动画布
       if (e.buttons === 1) {
-        huabuPositionChange(e.clientX - HCData.oldMoveDownX, e.clientY - HCData.oldMoveDownY)
-        HCData.oldMoveDownX = e.clientX
-        HCData.oldMoveDownY = e.clientY
+        huabuPositionChange(e.clientX - helpData.oldMoveDownX, e.clientY - helpData.oldMoveDownY)
+        helpData.oldMoveDownX = e.clientX
+        helpData.oldMoveDownY = e.clientY
       }
       //旋转画布
       else if (e.buttons === 2) {
@@ -364,32 +381,6 @@ function moveToChange(e: PointerEvent) {
   }
   //移动端
   if (e.pointerType === 'touch') {
-    if (HCData.touchID.length >= 2) {
-      //缩放
-      ;(function () {
-        //计算初始两点距离
-        let oldX = HCData.oldTouchsXY[1]!.x - HCData.oldTouchsXY[0]!.x
-        let oldY = HCData.oldTouchsXY[1]!.y - HCData.oldTouchsXY[0]!.y
-        let oldDistant = Math.hypot(oldX, oldY)
-        //计算更新后距离
-        let x = 0
-        let y = 0
-        if (HCData.touchID.indexOf(e.pointerId) === 0) {
-          x = HCData.oldTouchsXY[1]!.x - e.clientX
-          y = HCData.oldTouchsXY[1]!.y - e.clientY + window.innerHeight * 0.1
-        } else if (HCData.touchID.indexOf(e.pointerId) === 1) {
-          x = e.clientX - HCData.oldTouchsXY[0]!.x
-          y = e.clientY - window.innerHeight * 0.1 - HCData.oldTouchsXY[0]!.y
-        }
-        let distant = Math.hypot(x, y)
-        //把增加的距离换算成vw的百分比
-        canvasWidth.value += (distant - oldDistant) / window.innerWidth
-      })()
-      //移动
-      ;(function () {
-        let x = 0
-      })()
-    }
   }
 }
 
@@ -403,11 +394,10 @@ function upToChange(e: PointerEvent) {
   }
   //移动端
   if (e.pointerType === 'touch') {
-    isUsePenci = true
-    isDot = true
-    //抬起时删除对应触摸点id
-    let index = HCData.touchID.indexOf(e.pointerId)
-    HCData.touchID.splice(index, 1)
+    helpData.pointers.delete(e.pointerId)
+    if (helpData.pointers.size === 0) {
+      isUsePenci = true
+    }
   }
 }
 </script>
