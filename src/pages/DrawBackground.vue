@@ -350,13 +350,23 @@ function downToChange(e: PointerEvent) {
   //移动端
   else if (e.pointerType === 'touch') {
     helpData.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
-    if (helpData.pointers.size >= 2) {
+    if (helpData.pointers.size === 2) {
       //取消画画状态
       isDraw = false
       isUsePenci = false
       pathData = []
       penciMin!.clearRect(0, 0, canvasSize.value.width, canvasSize.value.height)
-      
+      //两触点的位置
+      let arr = [...helpData.pointers]
+      let x1 = arr[0]![1].x
+      let y1 = arr[0]![1].y
+      let x2 = arr[arr.length - 1]![1].x
+      let y2 = arr[arr.length - 1]![1].y
+      //计算初始数据
+      helpData.lastMidX = (x2 - x1)/2 + x1
+      helpData.lastMidY = (y2 - y1) / 2 + y1
+      helpData.lastDistance = Math.hypot((y2 - y1), (x2 - x1))
+      helpData.lastAngle =  Math.atan2((y2 - y1), (x2 - x1))
     }
   }
 }
