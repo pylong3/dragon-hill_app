@@ -2,7 +2,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { images } from '@/static/images/mapTable'
 
-//设置画布像素和大小
+//设置画布样式属性
 let canvasSize = ref({ width: 1080, height: 1920 })
 let canvasWidth = ref(75)
 let canvasPosition = ref({
@@ -11,6 +11,8 @@ let canvasPosition = ref({
 })
 let canvasRotateAngle = ref(0)
 let aspectRatio = ref('1080/1920')
+
+//样式对象
 let canvasStyle = computed(() => {
   return {
     width: canvasWidth.value + 'vw',
@@ -273,14 +275,14 @@ let helpData = {
   //pc端用来计算角度增量的初始角度
   oldAngle: 0,
   //移动端触点
-  pointers:new Map(),
+  pointers: new Map(),
   //移动端双指中点
   lastMidX: 0,
   lastMidY: 0,
   //移动端双指移动距离
   lastDistance: 0,
   //移动端双指角度
-  lastAngle: 0
+  lastAngle: 0,
 }
 
 //pc端画布缩放
@@ -306,7 +308,7 @@ function huabuPositionChange(x: number, y: number) {
   canvasPosition.value.top += y
 }
 
-//用于旋转画布的函数
+//用于pc端旋转画布的函数
 function huabuRotate(positionX: number, positionY: number) {
   let x = positionX - canvasPosition.value.left
   let y = positionY - canvasPosition.value.top
@@ -326,6 +328,21 @@ function huabuRotate(positionX: number, positionY: number) {
   }
   canvasRotateAngle.value += addAngle
   helpData.oldAngle = newAngle
+}
+
+//用于移动端更新中点距离角度
+function updataPhoneData() {
+  //两触点的位置
+  let arr = [...helpData.pointers]
+  let x1 = arr[0]![1].x
+  let y1 = arr[0]![1].y
+  let x2 = arr[arr.length - 1]![1].x
+  let y2 = arr[arr.length - 1]![1].y
+  //计算初始数据
+  helpData.lastMidX = (x2 - x1) / 2 + x1
+  helpData.lastMidY = (y2 - y1) / 2 + y1
+  helpData.lastDistance = Math.hypot(y2 - y1, x2 - x1)
+  helpData.lastAngle = Math.atan2(y2 - y1, x2 - x1)
 }
 
 //指针按下
@@ -349,6 +366,7 @@ function downToChange(e: PointerEvent) {
   }
   //移动端
   else if (e.pointerType === 'touch') {
+    //更新触点信息
     helpData.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
     if (helpData.pointers.size === 2) {
       //取消画画状态
@@ -356,17 +374,7 @@ function downToChange(e: PointerEvent) {
       isUsePenci = false
       pathData = []
       penciMin!.clearRect(0, 0, canvasSize.value.width, canvasSize.value.height)
-      //两触点的位置
-      let arr = [...helpData.pointers]
-      let x1 = arr[0]![1].x
-      let y1 = arr[0]![1].y
-      let x2 = arr[arr.length - 1]![1].x
-      let y2 = arr[arr.length - 1]![1].y
-      //计算初始数据
-      helpData.lastMidX = (x2 - x1)/2 + x1
-      helpData.lastMidY = (y2 - y1) / 2 + y1
-      helpData.lastDistance = Math.hypot((y2 - y1), (x2 - x1))
-      helpData.lastAngle =  Math.atan2((y2 - y1), (x2 - x1))
+      updataPhoneData()
     }
   }
 }
@@ -390,7 +398,25 @@ function moveToChange(e: PointerEvent) {
     }
   }
   //移动端
-  if (e.pointerType === 'touch') {
+  if (e.pointerType === 'touch' && helpData.pointers.size === 2) {
+    //得到新旧数据
+    helpData.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+    let midX = helpData.lastMidX
+    let midY = helpData.lastMidY
+    let distance = helpData.lastDistance
+    let angle = helpData.lastAngle
+    updataPhoneData()
+    //计算各增量
+    let addMidX = helpData.lastMidX - midX
+    let addMidY = helpData.lastMidY - midY
+    let addDistance = helpData.lastDistance - distance
+    let addAngle = helpData.lastAngle - angle
+    //移动
+    canvasPosition.value.left += addMidX
+    canvasPosition.value.top += addMidY
+    //缩放
+    canvasWidth.value += addDistance
+    //旋转
   }
 }
 
