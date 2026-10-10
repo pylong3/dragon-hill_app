@@ -11,6 +11,7 @@ let canvasPosition = ref({
 })
 let canvasRotateAngle = ref(0)
 let aspectRatio = ref('1080/1920')
+let transformOrigin = ref({ x: '50%', y: '50%' })
 
 //样式对象
 let canvasStyle = computed(() => {
@@ -21,6 +22,7 @@ let canvasStyle = computed(() => {
     top: canvasPosition.value.top + 'px',
     transition: 'width 0.1s linear',
     transform: `translate(-50%, -50%) rotateZ(${canvasRotateAngle.value}rad)`,
+    transformOrigin: `${transformOrigin.value.x} ${transformOrigin.value.y}`,
   }
 })
 
@@ -417,6 +419,26 @@ function moveToChange(e: PointerEvent) {
     //缩放
     canvasWidth.value += addDistance
     //旋转
+    ;(function () {
+      //画布中心的位置
+      let clientX = canvasPosition.value.left
+      let clientY = canvasPosition.value.top + window.innerHeight * 0.1
+      //两点距离
+      let midDistance = Math.hypot(clientX - helpData.lastMidX, clientY - helpData.lastMidY)
+      //两点角度
+      let midAngle = Math.atan2(clientY - helpData.lastMidY, clientX - helpData.lastMidX)
+      //两角之差
+      let angle = midAngle - canvasRotateAngle.value
+      //在画布中与画布中点的差
+      let offsetXDf = Math.cos(angle) * midDistance
+      let offsetYDf = Math.sin(angle) * midDistance
+      //两触点中点在画布上的位置
+      let offsetX = canvasWidth.value * 0.01 * window.innerWidth * 0.5 - offsetXDf
+      let offsetY = ((canvasWidth.value * 0.01 * window.innerWidth * 0.5) / 1080) * 1920 - offsetYDf
+      //更新变换原点
+      transformOrigin.value.x = offsetX + 'px'
+      transformOrigin.value.y = offsetY + 'px'
+    })()
   }
 }
 
