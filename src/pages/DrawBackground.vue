@@ -12,7 +12,7 @@ let canvasPosition = ref({
 let canvasRotateAngle = ref(0)
 let aspectRatio = ref('1080/1920')
 let transformOrigin = ref({ x: '50%', y: '50%' })
-let canvasScale = ref(0)
+let canvasScale = ref(1)
 
 //样式对象
 let canvasStyle = computed(() => {
@@ -413,7 +413,19 @@ function moveToChange(e: PointerEvent) {
     let addMidX = helpData.lastMidX - midX
     let addMidY = helpData.lastMidY - midY
     let addDistance = helpData.lastDistance - distance
-    let addAngle = helpData.lastAngle - angle
+    let addAngle: number
+    if (Math.sign(helpData.lastAngle) !== Math.sign(angle)) {
+      if (helpData.lastAngle < Math.PI / 2 || helpData.lastAngle > -Math.PI / 2) {
+        addAngle = helpData.lastAngle - angle
+      } else {
+        addAngle =
+          helpData.lastAngle - angle < 0
+            ? helpData.lastAngle - angle + Math.PI * 2
+            : Math.PI * 2 - (helpData.lastAngle - angle)
+      }
+    } else {
+      addAngle = helpData.lastAngle - angle
+    }
     //更新变换原点
     ;(function () {
       //画布中心的位置
@@ -480,6 +492,8 @@ function upToChange(e: PointerEvent) {
     @contextmenu.prevent
     ref="huabuBaba"
   >
+    <div class="tipe-button">?</div>
+    <div class="tipe-text"></div>
     <var-menu class="shezhi">
       <var-button type="primary">设置</var-button>
       <template #menu>
@@ -546,6 +560,29 @@ function upToChange(e: PointerEvent) {
 </template>
 
 <style scoped>
+.tipe-text {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 50vw;
+  height: 50vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 5;
+}
+.tipe-button {
+  position: absolute;
+  right: 2vw;
+  top: 2vh;
+  width: 6vw;
+  height: 6vw;
+  border-radius: 50%;
+  color: gray;
+  text-align: center;
+  line-height: 6vw;
+  background-color: white;
+  opacity: 0.8;
+}
 .shezhi {
   position: absolute;
   left: 0;
