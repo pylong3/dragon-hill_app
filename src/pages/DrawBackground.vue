@@ -473,6 +473,27 @@ function upToChange(e: PointerEvent) {
     }
   }
 }
+
+//是否显示提示
+let isTipe = ref()
+let tipeOpacity = ref(0)
+isTipe.value = false
+let tipeContent =
+  window.innerWidth >= 768
+    ? '1.空格+左键=移动;\n2.空格+右键=旋转;\n3.滚轮 = 缩放;'
+    : '画布可以双指缩放旋转移动'
+onMounted(() => {
+  document.addEventListener('click', (e) => {
+    let div = e.target as HTMLDivElement
+    if (!isTipe.value && div.className === 'tipe-button') {
+      isTipe.value = true
+      tipeOpacity.value = 1
+    } else if (isTipe.value) {
+      isTipe.value = false
+      tipeOpacity.value = 0
+    }
+  })
+})
 </script>
 
 <template>
@@ -493,7 +514,9 @@ function upToChange(e: PointerEvent) {
     ref="huabuBaba"
   >
     <div class="tipe-button">?</div>
-    <div class="tipe-text"></div>
+    <transition name="fade">
+      <div v-show="isTipe" class="tipe-text">{{ tipeContent }}</div>
+    </transition>
     <var-menu class="shezhi">
       <var-button type="primary">设置</var-button>
       <template #menu>
@@ -560,19 +583,49 @@ function upToChange(e: PointerEvent) {
 </template>
 
 <style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 .tipe-text {
   position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 50vw;
-  height: 50vh;
-  background-color: rgba(0, 0, 0, 0.5);
+  top: 7vh;
+  right: 2vw;
+  width: 70vw;
+  height: 20vh;
+  background: #fff;
+  border: 2px solid rgba(0, 0, 0, 0.5);
+  border-radius: 16px;
+  font-size: 14px;
+  z-index: 5;
+  transition: 0.3s all ease;
+  text-align: center;
+  font-size: 2.5vh;
+  line-height: 20vh;
+}
+
+/* 尾巴：旋转的方块 */
+.tipe-text::after {
+  content: '';
+  position: absolute;
+  top: -10px;
+  right: 6vw;
+  width: 15px;
+  height: 15px;
+  background: #fff;
+  border-right: 2px solid rgba(0, 0, 0, 0.5);
+  border-bottom: 2px solid rgba(0, 0, 0, 0.5);
+  transform: rotate(225deg);
   z-index: 5;
 }
 .tipe-button {
   position: absolute;
-  right: 2vw;
+  right: 7vw;
   top: 2vh;
   width: 6vw;
   height: 6vw;
@@ -582,6 +635,7 @@ function upToChange(e: PointerEvent) {
   line-height: 6vw;
   background-color: white;
   opacity: 0.8;
+  font-size: 3vh;
 }
 .shezhi {
   position: absolute;
