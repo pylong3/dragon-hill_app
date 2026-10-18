@@ -118,6 +118,7 @@ if (window.innerWidth >= 768) {
   height: 100vh;
   background-color: rgb(237, 242, 250);
   overflow: hidden;
+  touch-action: none;
 }
 .tip {
   width: 32vmin;

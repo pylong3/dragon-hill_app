@@ -451,8 +451,9 @@ function moveToChange(e: PointerEvent) {
     canvasPosition.value.left += addMidX
     canvasPosition.value.top += addMidY
     //缩放
-    canvasScale.value += addDistance / (canvasWidth.value * window.innerWidth)
+    canvasScale.value += (addDistance / window.innerWidth)
     //旋转
+    console.log(canvasScale.value)
     canvasRotateAngle.value += addAngle
   }
 }
@@ -657,6 +658,7 @@ onMounted(() => {
   max-width: 600px;
   display: flex;
   align-items: center;
+  transform: scale();
 }
 .slider-demo-block .el-slider {
   margin-top: 0;
