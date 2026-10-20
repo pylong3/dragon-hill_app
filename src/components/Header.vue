@@ -47,26 +47,6 @@ if (window.innerWidth >= 768) {
 
 <template>
   <div class="container">
-    <!-- <var-app-bar :title="routeTitle" class="header" style="height: 10vh">
-      <template #left>
-        <var-button color="transparent" text-color="#fff" round text @click="houtui()">
-          <var-icon name="chevron-left" :size="24" />
-        </var-button>
-      </template>
-      <template #right>
-        <var-menu>
-          <var-button color="transparent" text-color="#fff" round text>
-            <var-icon name="menu" :size="24" />
-          </var-button>
-          <template #menu>
-            <var-cell ripple v-for="item in routeOption" @click="tipAnima(item.path, item.name)">
-              {{ item.name }}
-            </var-cell>
-          </template>
-        </var-menu>
-      </template>
-    </var-app-bar>
-    <div class="tip" v-for="item in tipData" :key="item.id">已跳转至“{{ item.name }}”</div> -->
     <var-tabs
       v-if="!isPC"
       elevation
@@ -74,8 +54,9 @@ if (window.innerWidth >= 768) {
       active-color="var(--color-on-primary)"
       inactive-color="var(--color-on-info)"
       v-model:active="active"
+      style="height: 10vh;"
     >
-      <var-tab v-for="item in routeOption" @click="tipAnima(item.path, item.name)">
+      <var-tab v-for="item in routeOption" @click="tipAnima(item.path, item.name)" style="width: 18vw;font-size: 4vw;">
         {{ item.name }}
       </var-tab>
     </var-tabs>
@@ -106,6 +87,7 @@ if (window.innerWidth >= 768) {
 .zhanshi {
   width: 100vw;
   height: 90vh;
+  /* background-color: white; */
 }
 .zhanshiPC {
   float: left;
@@ -119,6 +101,12 @@ if (window.innerWidth >= 768) {
   background-color: rgb(237, 242, 250);
   overflow: hidden;
   touch-action: none;
+  /*禁止浏览器的一些行为 */
+  user-select: none;
+  -webkit-user-select: none; /* 兼容 Safari */
+  /* 关键：针对 iOS 的杀手锏 */
+  /* 阻止长按弹出“复制/共享”等系统菜单 */
+  -webkit-touch-callout: none;
 }
 .tip {
   width: 32vmin;

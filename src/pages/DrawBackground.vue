@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { images } from '@/static/images/mapTable'
+import { ToiletPaper } from '@element-plus/icons-vue'
 
 //设置画布样式属性
 let canvasSize = ref({ width: 1080, height: 1920 })
@@ -267,7 +268,9 @@ function isSpace(v: boolean, e: KeyboardEvent) {
 //挂载后自动获取焦点
 const huabuBaba = ref<HTMLDivElement>()
 onMounted(() => {
-  huabuBaba.value!.focus()
+  if (window.innerWidth >= 768) {
+    huabuBaba.value?.focus()
+  }
 })
 
 //用于实现变化功能的数据
@@ -378,6 +381,9 @@ function downToChange(e: PointerEvent) {
       pathData = []
       penciMin!.clearRect(0, 0, canvasSize.value.width, canvasSize.value.height)
       updataPhoneData()
+      console.log(
+        `midX:${helpData.lastMidX},midY:${helpData.lastMidY},distance:${helpData.lastDistance},angle:${helpData.lastAngle}`,
+      )
     }
   }
 }
@@ -401,60 +407,65 @@ function moveToChange(e: PointerEvent) {
     }
   }
   //移动端
-  if (e.pointerType === 'touch' && helpData.pointers.size === 2) {
-    //得到新旧数据
+  if (e.pointerType === 'touch') {
+    //更新触点位置
     helpData.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
-    let midX = helpData.lastMidX
-    let midY = helpData.lastMidY
-    let distance = helpData.lastDistance
-    let angle = helpData.lastAngle
-    updataPhoneData()
-    //计算各增量
-    let addMidX = helpData.lastMidX - midX
-    let addMidY = helpData.lastMidY - midY
-    let addDistance = helpData.lastDistance - distance
-    let addAngle: number
-    if (Math.sign(helpData.lastAngle) !== Math.sign(angle)) {
-      if (helpData.lastAngle < Math.PI / 2 || helpData.lastAngle > -Math.PI / 2) {
-        addAngle = helpData.lastAngle - angle
+    if (helpData.pointers.size === 2) {
+      //得到新旧数据
+      let midX = helpData.lastMidX
+      let midY = helpData.lastMidY
+      let distance = helpData.lastDistance
+      let angle = helpData.lastAngle
+      updataPhoneData()
+      //计算各增量
+      let addMidX = helpData.lastMidX - midX
+      let addMidY = helpData.lastMidY - midY
+      let addDistance = helpData.lastDistance - distance
+      let addAngle: number
+      if (Math.sign(helpData.lastAngle) !== Math.sign(angle)) {
+        if (helpData.lastAngle < Math.PI / 2 || helpData.lastAngle > -Math.PI / 2) {
+          addAngle = helpData.lastAngle - angle
+        } else {
+          addAngle =
+            helpData.lastAngle - angle < 0
+              ? helpData.lastAngle - angle + Math.PI * 2
+              : Math.PI * 2 - (helpData.lastAngle - angle)
+        }
       } else {
-        addAngle =
-          helpData.lastAngle - angle < 0
-            ? helpData.lastAngle - angle + Math.PI * 2
-            : Math.PI * 2 - (helpData.lastAngle - angle)
+        addAngle = helpData.lastAngle - angle
       }
-    } else {
-      addAngle = helpData.lastAngle - angle
-    }
-    //更新变换原点
-    ;(function () {
-      //画布中心的位置
-      let clientX = canvasPosition.value.left
-      let clientY = canvasPosition.value.top + window.innerHeight * 0.1
-      //两点距离
-      let midDistance = Math.hypot(clientX - helpData.lastMidX, clientY - helpData.lastMidY)
-      //两点角度
-      let midAngle = Math.atan2(clientY - helpData.lastMidY, clientX - helpData.lastMidX)
-      //两角之差
-      let angle = midAngle - canvasRotateAngle.value
-      //在画布中与画布中点的差
-      let offsetXDf = Math.cos(angle) * midDistance
-      let offsetYDf = Math.sin(angle) * midDistance
-      //两触点中点在画布上的位置
-      let offsetX = canvasWidth.value * 0.01 * window.innerWidth * 0.5 - offsetXDf
-      let offsetY = ((canvasWidth.value * 0.01 * window.innerWidth * 0.5) / 1080) * 1920 - offsetYDf
       //更新变换原点
-      transformOrigin.value.x = offsetX + 'px'
-      transformOrigin.value.y = offsetY + 'px'
-    })()
-    //移动
-    canvasPosition.value.left += addMidX
-    canvasPosition.value.top += addMidY
-    //缩放
-    canvasScale.value += (addDistance / window.innerWidth)
-    //旋转
-    console.log(canvasScale.value)
-    canvasRotateAngle.value += addAngle
+      ;(function () {
+        //画布中心的位置
+        let clientX = canvasPosition.value.left
+        let clientY = canvasPosition.value.top + window.innerHeight * 0.1
+        //两点距离
+        let midDistance = Math.hypot(clientX - helpData.lastMidX, clientY - helpData.lastMidY)
+        //两点角度
+        let midAngle = Math.atan2(clientY - helpData.lastMidY, clientX - helpData.lastMidX)
+        //两角之差
+        let angle = midAngle - canvasRotateAngle.value
+        //在画布中与画布中点的差
+        let offsetXDf = Math.cos(angle) * midDistance
+        let offsetYDf = Math.sin(angle) * midDistance
+        //两触点中点在画布上的位置
+        let offsetX = canvasWidth.value * 0.01 * window.innerWidth * 0.5 - offsetXDf
+        let offsetY =
+          ((canvasWidth.value * 0.01 * window.innerWidth * 0.5) / 1080) * 1920 - offsetYDf
+        //更新变换原点
+        transformOrigin.value.x = offsetX + 'px'
+        transformOrigin.value.y = offsetY + 'px'
+      })()
+      //移动
+      canvasPosition.value.left += addMidX
+      canvasPosition.value.top += addMidY
+      //缩放
+      canvasScale.value += addDistance / window.innerWidth
+      //旋转
+      // console.log(canvasScale.value)
+      canvasRotateAngle.value += addAngle
+      console.log(addMidX + `\n`, addMidY + `\n`, addDistance + `\n`, addAngle + `\n`)
+    }
   }
 }
 
@@ -483,18 +494,16 @@ let tipeContent =
   window.innerWidth >= 768
     ? '1.空格+左键=移动;\n2.空格+右键=旋转;\n3.滚轮 = 缩放;'
     : '画布可以双指缩放旋转移动'
-onMounted(() => {
-  document.addEventListener('click', (e) => {
-    let div = e.target as HTMLDivElement
-    if (!isTipe.value && div.className === 'tipe-button') {
-      isTipe.value = true
-      tipeOpacity.value = 1
-    } else if (isTipe.value) {
-      isTipe.value = false
-      tipeOpacity.value = 0
-    }
-  })
-})
+function unTipe() {
+  isTipe.value = false
+  tipeOpacity.value = 0
+  document.removeEventListener('pointerdown', unTipe)
+}
+function tipe() {
+  isTipe.value = true
+  tipeOpacity.value = 1
+  document.addEventListener('pointerdown', unTipe)
+}
 </script>
 
 <template>
@@ -514,7 +523,7 @@ onMounted(() => {
     @contextmenu.prevent
     ref="huabuBaba"
   >
-    <div class="tipe-button">?</div>
+    <div class="tipe-button" @pointerdown.prevent="tipe()">?</div>
     <transition name="fade">
       <div v-show="isTipe" class="tipe-text">{{ tipeContent }}</div>
     </transition>
