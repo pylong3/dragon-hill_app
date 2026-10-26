@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { images } from '@/static/images/mapTable'
-import { ToiletPaper } from '@element-plus/icons-vue'
 
 //设置画布样式属性
 let canvasSize = ref({ width: 1080, height: 1920 })
@@ -12,8 +11,6 @@ let canvasPosition = ref({
 })
 let canvasRotateAngle = ref(0)
 let aspectRatio = ref('1080/1920')
-let transformOrigin = ref({ x: '50%', y: '50%' })
-let canvasScale = ref(1)
 
 //样式对象
 let canvasStyle = computed(() => {
@@ -22,9 +19,8 @@ let canvasStyle = computed(() => {
     aspectRatio: aspectRatio.value,
     left: canvasPosition.value.left + 'px',
     top: canvasPosition.value.top + 'px',
-    transition: 'width 0.1s linear',
-    transform: `translate(-50%, -50%) rotateZ(${canvasRotateAngle.value}rad) scale(${canvasScale.value})`,
-    transformOrigin: `${transformOrigin.value.x} ${transformOrigin.value.y}`,
+    // transition: 'all 0.1s linear',
+    transform: `translate(-50%, -50%) rotateZ(${canvasRotateAngle.value}rad)`,
   }
 })
 
@@ -434,37 +430,56 @@ function moveToChange(e: PointerEvent) {
       } else {
         addAngle = helpData.lastAngle - angle
       }
-      //更新变换原点
+      //移动
+      canvasPosition.value.left += addMidX
+      canvasPosition.value.top += addMidY
+      //缩放补偿值
+      let scaleFixX
+      let scaleFixY
+        //计算缩放补偿值
       ;(function () {
         //画布中心的位置
         let clientX = canvasPosition.value.left
         let clientY = canvasPosition.value.top + window.innerHeight * 0.1
-        //两点距离
-        let midDistance = Math.hypot(clientX - helpData.lastMidX, clientY - helpData.lastMidY)
-        //两点角度
-        let midAngle = Math.atan2(clientY - helpData.lastMidY, clientX - helpData.lastMidX)
-        //两角之差
-        let angle = midAngle - canvasRotateAngle.value
-        //在画布中与画布中点的差
-        let offsetXDf = Math.cos(angle) * midDistance
-        let offsetYDf = Math.sin(angle) * midDistance
-        //两触点中点在画布上的位置
-        let offsetX = canvasWidth.value * 0.01 * window.innerWidth * 0.5 - offsetXDf
-        let offsetY =
-          ((canvasWidth.value * 0.01 * window.innerWidth * 0.5) / 1080) * 1920 - offsetYDf
-        //更新变换原点
-        transformOrigin.value.x = offsetX + 'px'
-        transformOrigin.value.y = offsetY + 'px'
+        //两点xy差值
+        let xCha = clientX - helpData.lastMidX
+        let yCha = clientY - helpData.lastMidY
+        //缩放比
+        let scaleRitio = addDistance / ((canvasWidth.value * window.innerWidth) / 100)
+        //计算缩放补偿值
+        scaleFixX = xCha * scaleRitio
+        scaleFixY = yCha * scaleRitio
       })()
-      //移动
-      canvasPosition.value.left += addMidX
-      canvasPosition.value.top += addMidY
       //缩放
-      canvasScale.value += addDistance / window.innerWidth
+      canvasWidth.value += addDistance / ((canvasWidth.value * window.innerWidth) / 100)
+      canvasPosition.value.left += scaleFixX
+      canvasPosition.value.top += scaleFixY
+      //计算旋转补偿值
+      let spinFixX: number
+      let spinFixY: number
+      ;(function () {
+        //画布中心的位置
+        let clientX = canvasPosition.value.left
+        let clientY = canvasPosition.value.top + window.innerHeight * 0.1
+        //两点xy差值
+        let xOldCha = clientX - helpData.lastMidX
+        let yOldCha = clientY - helpData.lastMidY
+        //两点距离
+        let distance = Math.hypot(xOldCha, yOldCha)
+        //两点角度
+        let oldAngle = Math.atan2(yOldCha, xOldCha)
+        //两点新差值
+        let xCha = Math.cos(oldAngle + addAngle) * distance
+        let yCha = Math.sin(oldAngle + addAngle) * distance
+        //计算补偿值
+        spinFixX = xCha - xOldCha
+        spinFixY = yCha - yOldCha
+      })()
       //旋转
-      // console.log(canvasScale.value)
       canvasRotateAngle.value += addAngle
-      console.log(addMidX + `\n`, addMidY + `\n`, addDistance + `\n`, addAngle + `\n`)
+      canvasPosition.value.left += spinFixX
+      canvasPosition.value.top += spinFixY
+      // console.log(addMidX + `\n`, addMidY + `\n`, addDistance + `\n`, addAngle + `\n`)
     }
   }
 }
