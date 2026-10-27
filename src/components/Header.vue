@@ -15,7 +15,7 @@ let routeOption = ref([
   { name: '你好', path: '/hellow' },
   { name: '可爱小猪', path: '/lovePig' },
   { name: '画布', path: '/huabu' },
-  { name: '编辑图片', path: '/editor' },
+  { name: '敬请期待~', path: '/editor' },
 ])
 //#endregion
 //#region定义方法

@@ -11,7 +11,9 @@ let canvasPosition = ref({
 })
 let canvasRotateAngle = ref(0)
 let aspectRatio = ref('1080/1920')
-
+watch(() => canvasWidth.value, value => {
+  if (value < 50) canvasWidth.value = 50
+})
 //样式对象
 let canvasStyle = computed(() => {
   return {
@@ -442,16 +444,16 @@ function moveToChange(e: PointerEvent) {
         let clientX = canvasPosition.value.left
         let clientY = canvasPosition.value.top + window.innerHeight * 0.1
         //两点xy差值
-        let xCha = clientX - helpData.lastMidX
-        let yCha = clientY - helpData.lastMidY
+        let xCha = clientX - midX
+        let yCha = clientY - midY
         //缩放比
-        let scaleRitio = addDistance / ((canvasWidth.value * window.innerWidth) / 100)
+        let scaleRitio = (addDistance / window.innerWidth) / (canvasWidth.value / 100)
         //计算缩放补偿值
         scaleFixX = xCha * scaleRitio
         scaleFixY = yCha * scaleRitio
       })()
       //缩放
-      canvasWidth.value += addDistance / ((canvasWidth.value * window.innerWidth) / 100)
+      canvasWidth.value += (addDistance / window.innerWidth) * 100
       canvasPosition.value.left += scaleFixX
       canvasPosition.value.top += scaleFixY
       //计算旋转补偿值
@@ -503,7 +505,6 @@ function upToChange(e: PointerEvent) {
 
 //是否显示提示
 let isTipe = ref()
-let tipeOpacity = ref(0)
 isTipe.value = false
 let tipeContent =
   window.innerWidth >= 768
@@ -511,12 +512,10 @@ let tipeContent =
     : '画布可以双指缩放旋转移动'
 function unTipe() {
   isTipe.value = false
-  tipeOpacity.value = 0
   document.removeEventListener('pointerdown', unTipe)
 }
 function tipe() {
   isTipe.value = true
-  tipeOpacity.value = 1
   document.addEventListener('pointerdown', unTipe)
 }
 </script>
@@ -538,9 +537,9 @@ function tipe() {
     @contextmenu.prevent
     ref="huabuBaba"
   >
-    <div class="tipe-button" @pointerdown.prevent="tipe()">?</div>
+    <div class="tipe-button" @pointerdown.stop="tipe()">?</div>
     <transition name="fade">
-      <div v-show="isTipe" class="tipe-text">{{ tipeContent }}</div>
+      <div v-if="isTipe" class="tipe-text">{{ tipeContent }}</div>
     </transition>
     <var-menu class="shezhi">
       <var-button type="primary">设置</var-button>
@@ -617,6 +616,10 @@ function tipe() {
 .fade-leave-to {
   opacity: 0;
 }
+/* .fade-enter-to,
+.fade-leave-from {
+  opacity: 1;
+} */
 .tipe-text {
   position: absolute;
   top: 7vh;
@@ -628,10 +631,10 @@ function tipe() {
   border-radius: 16px;
   font-size: 14px;
   z-index: 5;
-  transition: 0.3s all ease;
   text-align: center;
   font-size: 2.5vh;
   line-height: 20vh;
+  /* opacity: 1; */
 }
 
 /* 尾巴：旋转的方块 */
